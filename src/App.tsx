@@ -1,0 +1,93 @@
+import { useState } from 'react'
+import { PlusIcon } from '@heroicons/react/20/solid'
+import { DataGrid } from './components/DataGrid'
+import { Timeline } from './components/Timeline'
+import { EventForm } from './components/EventForm'
+import { useEventStore } from './store/events'
+import type { DataGridColumn } from './components/DataGrid'
+import type { EventFormData } from './components/EventForm'
+
+const columns: DataGridColumn[] = [
+  { accessorKey: 'title', header: 'Title', enableSorting: true, enableColumnFilter: true, size: 180 },
+  { accessorKey: 'date', header: 'Date', enableSorting: true, enableColumnFilter: false, size: 96 },
+  { accessorKey: 'time', header: 'Time', enableSorting: false, enableColumnFilter: false, size: 72 },
+  { accessorKey: 'category', header: 'Category', enableSorting: true, enableColumnFilter: true, size: 100 },
+  { accessorKey: 'status', header: 'Status', enableSorting: true, enableColumnFilter: true, size: 96 },
+  { accessorKey: 'location', header: 'Location', enableSorting: false, enableColumnFilter: true, size: 140 },
+  { accessorKey: 'attendees', header: 'Attendees', enableSorting: true, enableColumnFilter: false, size: 80 },
+  { accessorKey: 'organizer', header: 'Organizer', enableSorting: true, enableColumnFilter: true, size: 120 },
+]
+
+export default function App() {
+  const { events, isLoading, error, addEvent } = useEventStore()
+  const [formOpen, setFormOpen] = useState(false)
+  function handleSave(data: EventFormData) {
+    addEvent({ ...data, description: data.description ?? '' })
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col bg-gray-50">
+      {/* Header */}
+      <header className="sticky top-0 z-30 border-b border-gray-200 bg-white px-4 py-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900 sm:text-xl">
+              Event Dashboard
+            </h1>
+            <p className="hidden text-sm text-gray-500 sm:block">
+              Manage and organize your events
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setFormOpen(true)}
+              className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+            >
+              <PlusIcon className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden sm:inline">New Event</span>
+              <span className="sm:hidden">New</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex flex-1 flex-col lg:flex-row gap-5 px-4 py-5 lg:px-8 lg:py-6">
+        <section aria-labelledby="grid-heading" className="lg:flex-1 lg:min-w-0">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+            <h2 id="grid-heading" className="mb-4 text-base font-semibold text-gray-900">
+              All Events
+            </h2>
+            <DataGrid
+              data={events}
+              columns={columns}
+              isLoading={isLoading}
+              error={error}
+              pageSize={10}
+            />
+          </div>
+        </section>
+
+        <section
+          aria-labelledby="timeline-heading"
+          className="lg:w-[340px] lg:shrink-0 lg:self-start lg:sticky lg:top-[61px]"
+        >
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+            <h2 id="timeline-heading" className="mb-4 text-base font-semibold text-gray-900">
+              Timeline
+            </h2>
+            <Timeline events={events} />
+          </div>
+        </section>
+
+
+      </main>
+
+      <EventForm
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        onSave={handleSave}
+      />
+    </div>
+  )
+}
