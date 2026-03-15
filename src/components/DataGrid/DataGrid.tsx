@@ -19,6 +19,13 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/20/solid'
 import { ColumnToggle } from './ColumnToggle'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { CATEGORY_STYLES, STATUS_STYLES } from '../../lib/categoryColors'
 import type { Event } from '../../data/mockEvents'
 
@@ -193,28 +200,31 @@ export function DataGrid({
       </div>
 
       {/* Pagination footer */}
-      <div className="flex items-center justify-between text-sm text-gray-600">
+      <div className="flex items-center justify-between text-xs text-gray-600">
         <div className="flex items-center gap-3">
           <span>
             Showing {from} to {to} of {filteredCount} event{filteredCount !== 1 ? 's' : ''}
           </span>
-          <label className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5">
             Show
-            <select
-              value={currentPageSize}
-              onChange={(e) => {
-                table.setPageSize(Number(e.target.value))
+            <Select
+              value={String(currentPageSize)}
+              onValueChange={(v) => {
+                table.setPageSize(Number(v))
                 table.setPageIndex(0)
               }}
-              className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Rows per page"
             >
-              {[5, 10, 15, 25, 50].map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
+              <SelectTrigger aria-label="Rows per page" className="h-7 w-16 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[5, 10, 15, 25].map((n) => (
+                  <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             entries
-          </label>
+          </span>
         </div>
 
         <div className="flex items-center gap-2" role="navigation" aria-label="Pagination">

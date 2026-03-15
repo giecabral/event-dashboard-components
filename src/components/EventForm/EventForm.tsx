@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as Dialog from '@radix-ui/react-dialog'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { XMarkIcon, CheckCircleIcon } from '@heroicons/react/20/solid'
 import { eventSchema, type EventFormData } from './schema'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import type { Event } from '../../data/mockEvents'
 
 interface EventFormProps {
@@ -52,6 +59,7 @@ export function EventForm({ open, onClose, initialData, onSave }: EventFormProps
     handleSubmit,
     reset,
     setFocus,
+    control,
     formState: { errors },
   } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
@@ -79,11 +87,11 @@ export function EventForm({ open, onClose, initialData, onSave }: EventFormProps
   }
 
   const base =
-    'w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-  const err = 'border-red-400 focus:ring-red-400'
+    'w-full rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-0'
+  const err = 'border-red-400'
 
   return (
-    <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog.Root open={open} modal={false} onOpenChange={(o) => !o && onClose()}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
 
@@ -97,7 +105,7 @@ export function EventForm({ open, onClose, initialData, onSave }: EventFormProps
               {isEdit ? 'Edit Event' : 'New Event'}
             </Dialog.Title>
             <Dialog.Close
-              className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none"
               aria-label="Close"
             >
               <XMarkIcon className="h-5 w-5" aria-hidden="true" />
@@ -156,28 +164,47 @@ export function EventForm({ open, onClose, initialData, onSave }: EventFormProps
                 </Field>
 
                 <Field label="Category" error={errors.category?.message} required>
-                  <select
-                    {...register('category')}
-                    className={`${base} ${errors.category ? err : ''}`}
-                    aria-invalid={!!errors.category}
-                  >
-                    <option value="">Select…</option>
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
+                  <Controller
+                    control={control}
+                    name="category"
+                    render={({ field }) => (
+                      <Select value={field.value ?? ''} onValueChange={field.onChange}>
+                        <SelectTrigger
+                          className={`w-full h-[34px] focus-visible:ring-0 focus-visible:border-gray-300 ${errors.category ? 'border-red-400' : ''}`}
+                          aria-invalid={!!errors.category}
+                        >
+                          <SelectValue placeholder="Select…" />
+                        </SelectTrigger>
+                        <SelectContent side='bottom' sideOffset={4}>
+                          {CATEGORIES.map((c) => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </Field>
 
                 <Field label="Status" error={errors.status?.message} required>
-                  <select
-                    {...register('status')}
-                    className={`${base} ${errors.status ? err : ''}`}
-                    aria-invalid={!!errors.status}
-                  >
-                    <option value="scheduled">Scheduled</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
+                  <Controller
+                    control={control}
+                    name="status"
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger
+                          className={`w-full h-[34px] capitalize focus-visible:ring-0 focus-visible:border-gray-300 ${errors.status ? 'border-red-400' : ''}`}
+                          aria-invalid={!!errors.status}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="scheduled">Scheduled</SelectItem>
+                          <SelectItem value="completed">Completed</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </Field>
 
                 <div className="col-span-2">
@@ -222,13 +249,13 @@ export function EventForm({ open, onClose, initialData, onSave }: EventFormProps
               <div className="flex justify-end gap-2 border-t border-gray-200 px-6 py-4">
                 <Dialog.Close
                   type="button"
-                  className="rounded-md border border-gray-300 px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="rounded-md border border-gray-300 px-4 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
                 >
                   Cancel
                 </Dialog.Close>
                 <button
                   type="submit"
-                  className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                  className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none"
                 >
                   {isEdit ? 'Save changes' : 'Create event'}
                 </button>

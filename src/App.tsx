@@ -6,6 +6,8 @@ import { EventForm } from './components/EventForm'
 import { useEventStore } from './store/events'
 import type { DataGridColumn } from './components/DataGrid'
 import type { EventFormData } from './components/EventForm'
+import { InformationCircleIcon } from '@heroicons/react/24/outline'
+import { Tooltip, TooltipContent, TooltipTrigger } from './components/ui/tooltip'
 
 const columns: DataGridColumn[] = [
   { accessorKey: 'title', header: 'Title', enableSorting: true, enableColumnFilter: true, size: 180 },
@@ -75,8 +77,16 @@ export default function App() {
           className="lg:w-[340px] lg:shrink-0"
         >
           <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5 lg:h-full lg:overflow-y-auto">
-            <h2 id="timeline-heading" className="mb-4 text-base font-semibold text-gray-900">
+            <h2 id="timeline-heading" className="flex gap-2 mb-4 text-base font-semibold text-gray-900">
               Timeline
+              <Tooltip>
+                <TooltipTrigger>
+                  <InformationCircleIcon className='h-4 w-4 text-gray-400' />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-60 bg-gray-400 text-white" side={"right"} sideOffset={8}>
+                  Use the arrow keys to navigate the schedule. Left and Right move between days. Up and Down move between events within the current day.
+                </TooltipContent>
+              </Tooltip>
             </h2>
             <Timeline events={events} />
           </div>

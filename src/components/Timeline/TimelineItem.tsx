@@ -24,9 +24,8 @@ export const TimelineItem = forwardRef<HTMLDivElement, TimelineItemProps>(
         aria-posinset={index + 1}
         aria-setsize={groupSize}
         aria-label={`${event.title}, ${event.status}, ${event.time}, ${event.location}`}
-        className="group relative ml-6 rounded-lg border border-gray-200 bg-white p-3.5 shadow-sm transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 hover:shadow-md cursor-default"
+        className="group relative ml-6 rounded-lg border border-gray-200 bg-white p-3.5 shadow-sm transition-shadow focus:outline-none focus:ring-1 focus:ring-gray-800 focus:ring-offset-1 hover:shadow-md cursor-pointer"
       >
-        {/* Category-colored connector dot */}
         <span
           className={`absolute -left-[1.6rem] top-4 h-3 w-3 rounded-full border-2 border-white ${dotColor}`}
           aria-hidden="true"
