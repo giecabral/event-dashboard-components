@@ -14,7 +14,7 @@ export function ColumnToggle({ table }: ColumnToggleProps) {
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
         aria-expanded={open}
         aria-haspopup="listbox"
       >
@@ -44,7 +44,7 @@ export function ColumnToggle({ table }: ColumnToggleProps) {
                     type="checkbox"
                     checked={col.getIsVisible()}
                     onChange={col.getToggleVisibilityHandler()}
-                    className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600"
+                    className="h-3.5 w-3.5 rounded border-gray-300"
                   />
                   {typeof col.columnDef.header === 'string' ? col.columnDef.header : col.id}
                 </label>

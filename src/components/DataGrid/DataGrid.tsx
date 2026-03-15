@@ -178,7 +178,7 @@ export function DataGrid({
                   className={`group transition-colors hover:bg-gray-100 ${onRowClick ? 'cursor-pointer' : ''}`}
                   onClick={() => onRowClick?.(row.original)}
                 >
-                  {row.getVisibleCells().map((cell, cellIndex, cells) => {
+                  {row.getVisibleCells().map((cell, cellIndex) => {
                     const colId = cell.column.id
                     const value = cell.getValue() as string
                     const isFirst = cellIndex === 0

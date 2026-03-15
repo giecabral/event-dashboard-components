@@ -94,8 +94,8 @@ export default function App() {
           aria-labelledby="timeline-heading"
           className="lg:w-[340px] lg:shrink-0"
         >
-          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5 lg:h-full lg:overflow-y-auto">
-            <h2 id="timeline-heading" className="flex gap-2 mb-4 text-base font-semibold text-gray-900">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
+            <h2 id="timeline-heading" className="flex gap-2 mb-4 text-base font-semibold text-gray-900 lg:shrink-0">
               Timeline
               <Tooltip>
                 <TooltipTrigger>
@@ -106,7 +106,7 @@ export default function App() {
                 </TooltipContent>
               </Tooltip>
             </h2>
-            <Timeline events={events} onItemClick={handleEdit} />
+            <Timeline events={events} onItemClick={handleEdit} className="lg:flex-1 lg:min-h-0" />
           </div>
         </section>
 

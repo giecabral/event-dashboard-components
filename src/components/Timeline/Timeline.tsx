@@ -1,4 +1,4 @@
-import { useMemo, useRef, useCallback } from 'react'
+import { useMemo, useRef, useCallback, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { useAnnouncer } from '../../hooks/useAnnouncer'
 import { TimelineGroup, type DayGroup } from './TimelineGroup'
@@ -7,6 +7,7 @@ import type { Event } from '../../data/mockEvents'
 interface TimelineProps {
   events: Event[]
   onItemClick?: (event: Event) => void
+  className?: string
 }
 
 interface FocusPos {
@@ -14,15 +15,21 @@ interface FocusPos {
   i: number  // item index, -1 = group header
 }
 
-export function Timeline({ events, onItemClick }: TimelineProps) {
+export function Timeline({ events, onItemClick, className }: TimelineProps) {
   const announce = useAnnouncer()
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
 
-  // Group events by date (YYYY-MM-DD), sorted chronologically.
-  // Day is the natural grouping because events have an explicit date field
-  // and users expect to scan "what's happening on a given day".
+  // Group events by date (YYYY-MM-DD), sorted chronologically,
+  // filtered by the selected date range when set.
   const groups = useMemo<DayGroup[]>(() => {
+    const filtered = events.filter((e) => {
+      if (fromDate && e.date < fromDate) return false
+      if (toDate && e.date > toDate) return false
+      return true
+    })
     const map = new Map<string, Event[]>()
-    for (const event of events) {
+    for (const event of filtered) {
       const bucket = map.get(event.date) ?? []
       map.set(event.date, [...bucket, event])
     }
@@ -33,7 +40,7 @@ export function Timeline({ events, onItemClick }: TimelineProps) {
         label: format(parseISO(date), 'EEEE, MMMM d, yyyy'),
         events: evts,
       }))
-  }, [events])
+  }, [events, fromDate, toDate])
 
   // Roving tabindex: tracks which cell currently owns tabIndex=0
   const focusPos = useRef<FocusPos>({ g: 0, i: -1 })
@@ -99,52 +106,85 @@ export function Timeline({ events, onItemClick }: TimelineProps) {
     [focusAt]
   )
 
-  if (groups.length === 0) {
-    return (
-      <p className="py-12 text-center text-sm text-gray-400">No events to display.</p>
-    )
-  }
+  const inputBase = 'w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-xs shadow-sm focus:outline-none'
 
   return (
-    <div
-      role="tree"
-      aria-label="Events timeline grouped by day"
-      onKeyDown={handleKeyDown}
-      className="max-h-fit overflow-y-auto pr-2"
-    >
-      <p className="sr-only">
-        Use arrow keys to navigate. Left and Right move between day groups.
-        Up and Down move between events within a group.
-      </p>
+    <div className={`flex flex-col flex-1 min-h-0 ${className ?? ''}`}>
+      {/* Date range filter */}
+      <div className="mb-3 flex items-center gap-1">
+        <div className="flex flex-1 flex-col gap-0.5">
+          <label className="text-xs text-gray-500">From</label>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            max={toDate || undefined}
+            className={inputBase}
+          />
+        </div>
+        <div className="flex flex-1 flex-col gap-0.5">
+          <label className="text-xs text-gray-500">To</label>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            min={fromDate || undefined}
+            className={inputBase}
+          />
+        </div>
+        {(fromDate || toDate) && (
+          <button
+            onClick={() => { setFromDate(''); setToDate('') }}
+            className="self-end mb-px rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 focus:outline-none"
+          >
+            Clear
+          </button>
+        )}
+      </div>
 
-      {groups.map((group, gIdx) => (
-        <TimelineGroup
-          key={group.date}
-          group={group}
-          groupIndex={gIdx}
-          totalGroups={groups.length}
-          // Only the currently focused element gets tabIndex=0 (roving tabindex pattern).
-          // This keeps the timeline as a single Tab stop while arrow keys navigate internally.
-          headerTabIndex={
-            focusPos.current.g === gIdx && focusPos.current.i === -1 ? 0 : -1
-          }
-          itemTabIndex={(iIdx) =>
-            focusPos.current.g === gIdx && focusPos.current.i === iIdx ? 0 : -1
-          }
-          onHeaderFocus={() => { focusPos.current = { g: gIdx, i: -1 } }}
-          onItemFocus={(iIdx) => { focusPos.current = { g: gIdx, i: iIdx } }}
-          onItemClick={onItemClick}
-          headerRef={(el) => {
-            if (el) headerRefs.current.set(gIdx, el)
-            else headerRefs.current.delete(gIdx)
-          }}
-          itemRef={(iIdx, el) => {
-            const key = itemKey(gIdx, iIdx)
-            if (el) itemRefs.current.set(key, el)
-            else itemRefs.current.delete(key)
-          }}
-        />
-      ))}
+      {/* Scrollable groups list */}
+      {groups.length === 0 ? (
+        <p className="py-12 text-center text-sm text-gray-400">No events to display.</p>
+      ) : (
+        <div
+          role="tree"
+          aria-label="Events timeline grouped by day"
+          onKeyDown={handleKeyDown}
+          className="flex-1 min-h-0 max-h-[880px] overflow-y-auto pr-2"
+        >
+          <p className="sr-only">
+            Use arrow keys to navigate. Left and Right move between day groups.
+            Up and Down move between events within a group.
+          </p>
+
+          {groups.map((group, gIdx) => (
+            <TimelineGroup
+              key={group.date}
+              group={group}
+              groupIndex={gIdx}
+              totalGroups={groups.length}
+              headerTabIndex={
+                focusPos.current.g === gIdx && focusPos.current.i === -1 ? 0 : -1
+              }
+              itemTabIndex={(iIdx) =>
+                focusPos.current.g === gIdx && focusPos.current.i === iIdx ? 0 : -1
+              }
+              onHeaderFocus={() => { focusPos.current = { g: gIdx, i: -1 } }}
+              onItemFocus={(iIdx) => { focusPos.current = { g: gIdx, i: iIdx } }}
+              onItemClick={onItemClick}
+              headerRef={(el) => {
+                if (el) headerRefs.current.set(gIdx, el)
+                else headerRefs.current.delete(gIdx)
+              }}
+              itemRef={(iIdx, el) => {
+                const key = itemKey(gIdx, iIdx)
+                if (el) itemRefs.current.set(key, el)
+                else itemRefs.current.delete(key)
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
