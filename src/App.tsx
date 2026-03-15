@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { PlusIcon, XMarkIcon } from '@heroicons/react/20/solid'
 import { DataGrid } from './components/DataGrid'
 import { Timeline } from './components/Timeline'
@@ -53,7 +53,12 @@ export default function App() {
     [events, fromDate, toDate]
   )
 
+  // Remember which element triggered the modal so focus can be restored on close,
+  // keeping the timeline roving-tabindex keyboard navigation intact.
+  const returnFocusRef = useRef<HTMLElement | null>(null)
+
   function handleEdit(event: Event) {
+    returnFocusRef.current = document.activeElement as HTMLElement
     setEditingEvent(event)
     setFormOpen(true)
   }
@@ -61,6 +66,8 @@ export default function App() {
   function handleClose() {
     setFormOpen(false)
     setEditingEvent(null)
+    const target = returnFocusRef.current
+    requestAnimationFrame(() => target?.focus())
   }
 
   function handleSave(data: EventFormData) {
