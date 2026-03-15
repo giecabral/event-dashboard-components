@@ -139,8 +139,16 @@ export function Timeline({ events, isLoading = false, onItemClick, className }: 
         <div
           role="tree"
           aria-label="Events timeline grouped by day"
+          // tabIndex=0 makes the tree a Tab stop so keyboard nav can start without a prior click.
+          // When the div itself receives focus (not a child), redirect into the tree immediately.
+          tabIndex={0}
+          onFocus={(e) => {
+            if (e.target !== e.currentTarget) return
+            const { g, i } = focusPos.current
+            focusAt(g, i === -1 ? 0 : i)
+          }}
           onKeyDown={handleKeyDown}
-          className="flex-1 min-h-0 overflow-y-auto pr-2"
+          className="flex-1 min-h-0 overflow-y-auto pr-2 focus:outline-none"
         >
           <p className="sr-only">
             Use arrow keys to navigate. Left and Right move between day groups.

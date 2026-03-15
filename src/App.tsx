@@ -19,7 +19,6 @@ const columns: DataGridColumn[] = [
     enableColumnFilter: false,
     enableGlobalFilter: false,
     size: 96,
-    // Display as MM-DD-YYYY; underlying YYYY-MM-DD value is preserved for correct sorting
     cell: ({ getValue }) => {
       const val = getValue() as string
       const [y, m, d] = val.split('-')
@@ -80,7 +79,6 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen lg:h-screen flex-col bg-gray-50">
-      {/* Header */}
       <header className="sticky top-0 z-30 border-b border-gray-200 bg-white px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center gap-3 justify-between">
           <div>
