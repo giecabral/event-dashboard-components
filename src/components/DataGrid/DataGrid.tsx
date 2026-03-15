@@ -165,14 +165,18 @@ export function DataGrid({
           </thead>
 
           <tbody className="divide-y divide-gray-100">
-            {isLoading && (
-              <tr>
-                <td colSpan={columns.length} className="px-4 py-12 text-center text-gray-400">
-                  <span className="inline-block animate-spin mr-2" aria-hidden="true">⟳</span>
-                  Loading events…
-                </td>
+            {isLoading && Array.from({ length: pageSize }).map((_, rowIdx) => (
+              <tr key={rowIdx} aria-hidden="true">
+                {table.getVisibleFlatColumns().map((col, colIdx) => (
+                  <td key={col.id} className="px-3 py-2">
+                    <div
+                      className="h-3.5 rounded bg-gray-200 animate-pulse"
+                      style={{ width: `${['75%', '60%', '80%', '55%', '70%'][(rowIdx + colIdx) % 5]}` }}
+                    />
+                  </td>
+                ))}
               </tr>
-            )}
+            ))}
 
             {!isLoading && error && (
               <tr>

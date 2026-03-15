@@ -112,7 +112,7 @@ export default function App() {
                 <button
                   onClick={() => { setFromDate(''); setToDate('') }}
                   aria-label="Clear date filter"
-                  className="flex items-center gap-1 rounded-md border border-gray-300 px-2 py-1.5 text-xs text-gray-500 hover:bg-gray-50 focus:outline-none"
+                  className="flex items-center h-8 gap-1 rounded-md border border-gray-300 px-2 py-1.5 text-xs text-gray-500 hover:bg-gray-50 focus:outline-none"
                 >
                   <XMarkIcon className="h-3.5 w-3.5" aria-hidden="true" />
                   Clear
@@ -167,7 +167,7 @@ export default function App() {
                 </TooltipContent>
               </Tooltip>
             </h2>
-            <Timeline events={filteredEvents} onItemClick={handleEdit} className="lg:flex-1 lg:min-h-0" />
+            <Timeline events={filteredEvents} isLoading={isLoading} onItemClick={handleEdit} className="lg:flex-1 lg:min-h-0 max-h-[540px]" />
           </div>
         </section>
 
