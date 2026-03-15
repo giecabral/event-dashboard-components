@@ -6,6 +6,7 @@ import { EventForm } from './components/EventForm'
 import { useEventStore } from './store/events'
 import type { DataGridColumn } from './components/DataGrid'
 import type { EventFormData } from './components/EventForm'
+import type { Event } from './data/mockEvents'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { Tooltip, TooltipContent, TooltipTrigger } from './components/ui/tooltip'
 
@@ -21,10 +22,26 @@ const columns: DataGridColumn[] = [
 ]
 
 export default function App() {
-  const { events, isLoading, error, addEvent } = useEventStore()
+  const { events, isLoading, error, addEvent, updateEvent } = useEventStore()
   const [formOpen, setFormOpen] = useState(false)
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+
+  function handleEdit(event: Event) {
+    setEditingEvent(event)
+    setFormOpen(true)
+  }
+
+  function handleClose() {
+    setFormOpen(false)
+    setEditingEvent(null)
+  }
+
   function handleSave(data: EventFormData) {
-    addEvent({ ...data, description: data.description ?? '' })
+    if (editingEvent) {
+      updateEvent(editingEvent.id, { ...data, description: data.description ?? '' })
+    } else {
+      addEvent({ ...data, description: data.description ?? '' })
+    }
   }
 
   return (
@@ -44,7 +61,7 @@ export default function App() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setFormOpen(true)}
-              className="flex items-center gap-1.5 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+              className="flex items-center gap-1.5 rounded-md bg-default-blue px-3 py-2 text-sm font-medium text-white focus:outline-none"
             >
               <PlusIcon className="h-4 w-4" aria-hidden="true" />
               <span className="hidden sm:inline">New Event</span>
@@ -67,6 +84,7 @@ export default function App() {
                 isLoading={isLoading}
                 error={error}
                 pageSize={15}
+                onRowClick={handleEdit}
               />
             </div>
           </div>
@@ -88,7 +106,7 @@ export default function App() {
                 </TooltipContent>
               </Tooltip>
             </h2>
-            <Timeline events={events} />
+            <Timeline events={events} onItemClick={handleEdit} />
           </div>
         </section>
 
@@ -97,8 +115,9 @@ export default function App() {
 
       <EventForm
         open={formOpen}
-        onClose={() => setFormOpen(false)}
+        onClose={handleClose}
         onSave={handleSave}
+        initialData={editingEvent ?? undefined}
       />
     </div>
   )

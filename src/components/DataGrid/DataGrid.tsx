@@ -40,6 +40,7 @@ interface DataGridProps {
   isLoading?: boolean
   error?: string | null
   pageSize?: number
+  onRowClick?: (event: Event) => void
 }
 
 export function DataGrid({
@@ -48,8 +49,9 @@ export function DataGrid({
   isLoading = false,
   error = null,
   pageSize = 10,
+  onRowClick,
 }: DataGridProps) {
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'date', desc: false }])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
@@ -101,9 +103,9 @@ export function DataGrid({
                       className="px-3 py-2 text-left"
                       aria-sort={
                         sorted === 'asc' ? 'ascending'
-                        : sorted === 'desc' ? 'descending'
-                        : canSort ? 'none'
-                        : undefined
+                          : sorted === 'desc' ? 'descending'
+                            : canSort ? 'none'
+                              : undefined
                       }
                     >
                       <div
@@ -125,8 +127,8 @@ export function DataGrid({
                             {sorted === 'asc'
                               ? <ChevronUpIcon className="h-3.5 w-3.5" />
                               : sorted === 'desc'
-                              ? <ChevronDownIcon className="h-3.5 w-3.5" />
-                              : <ChevronUpDownIcon className="h-3.5 w-3.5" />}
+                                ? <ChevronDownIcon className="h-3.5 w-3.5" />
+                                : <ChevronUpDownIcon className="h-3.5 w-3.5" />}
                           </span>
                         )}
                       </div>
@@ -170,7 +172,11 @@ export function DataGrid({
 
             {!isLoading && !error &&
               table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="transition-colors hover:bg-gray-50">
+                <tr
+                  key={row.id}
+                  className={`transition-colors hover:bg-gray-50 ${onRowClick ? 'cursor-pointer' : ''}`}
+                  onClick={() => onRowClick?.(row.original)}
+                >
                   {row.getVisibleCells().map((cell) => {
                     const colId = cell.column.id
                     const value = cell.getValue() as string

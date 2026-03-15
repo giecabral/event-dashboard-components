@@ -6,6 +6,7 @@ import type { Event } from '../../data/mockEvents'
 
 interface TimelineProps {
   events: Event[]
+  onItemClick?: (event: Event) => void
 }
 
 interface FocusPos {
@@ -13,7 +14,7 @@ interface FocusPos {
   i: number  // item index, -1 = group header
 }
 
-export function Timeline({ events }: TimelineProps) {
+export function Timeline({ events, onItemClick }: TimelineProps) {
   const announce = useAnnouncer()
 
   // Group events by date (YYYY-MM-DD), sorted chronologically.
@@ -132,6 +133,7 @@ export function Timeline({ events }: TimelineProps) {
           }
           onHeaderFocus={() => { focusPos.current = { g: gIdx, i: -1 } }}
           onItemFocus={(iIdx) => { focusPos.current = { g: gIdx, i: iIdx } }}
+          onItemClick={onItemClick}
           headerRef={(el) => {
             if (el) headerRefs.current.set(gIdx, el)
             else headerRefs.current.delete(gIdx)

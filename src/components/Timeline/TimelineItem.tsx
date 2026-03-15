@@ -9,10 +9,11 @@ interface TimelineItemProps {
   groupSize: number
   tabIndex: number
   onFocus: () => void
+  onClick?: () => void
 }
 
 export const TimelineItem = forwardRef<HTMLDivElement, TimelineItemProps>(
-  ({ event, index, groupSize, tabIndex, onFocus }, ref) => {
+  ({ event, index, groupSize, tabIndex, onFocus, onClick }, ref) => {
     const dotColor = CATEGORY_STYLES[event.category]?.dot ?? CATEGORY_DOT_DEFAULT
 
     return (
@@ -21,6 +22,8 @@ export const TimelineItem = forwardRef<HTMLDivElement, TimelineItemProps>(
         role="treeitem"
         tabIndex={tabIndex}
         onFocus={onFocus}
+        onClick={onClick}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } }}
         aria-posinset={index + 1}
         aria-setsize={groupSize}
         aria-label={`${event.title}, ${event.status}, ${event.time}, ${event.location}`}

@@ -17,6 +17,7 @@ interface TimelineGroupProps {
   itemTabIndex: (itemIndex: number) => number
   onHeaderFocus: () => void
   onItemFocus: (itemIndex: number) => void
+  onItemClick?: (event: Event) => void
   headerRef: (el: HTMLDivElement | null) => void
   itemRef: (itemIndex: number, el: HTMLDivElement | null) => void
 }
@@ -31,6 +32,7 @@ export const TimelineGroup = forwardRef<HTMLDivElement, TimelineGroupProps>(
       itemTabIndex,
       onHeaderFocus,
       onItemFocus,
+      onItemClick,
       headerRef,
       itemRef,
     },
@@ -67,6 +69,7 @@ export const TimelineGroup = forwardRef<HTMLDivElement, TimelineGroupProps>(
             groupSize={group.events.length}
             tabIndex={itemTabIndex(i)}
             onFocus={() => onItemFocus(i)}
+            onClick={() => onItemClick?.(event)}
           />
         ))}
       </div>
