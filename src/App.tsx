@@ -26,7 +26,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50">
+    <div className="flex min-h-screen lg:h-screen flex-col bg-gray-50">
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-gray-200 bg-white px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
@@ -52,27 +52,29 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex flex-1 flex-col lg:flex-row gap-5 px-4 py-5 lg:px-8 lg:py-6">
+      <main className="flex flex-1 flex-col lg:flex-row gap-5 px-4 py-5 lg:px-8 lg:py-6 lg:overflow-hidden">
         <section aria-labelledby="grid-heading" className="lg:flex-1 lg:min-w-0">
-          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5 lg:h-full lg:flex lg:flex-col">
             <h2 id="grid-heading" className="mb-4 text-base font-semibold text-gray-900">
               All Events
             </h2>
-            <DataGrid
-              data={events}
-              columns={columns}
-              isLoading={isLoading}
-              error={error}
-              pageSize={10}
-            />
+            <div className="lg:flex-1 lg:min-h-0">
+              <DataGrid
+                data={events}
+                columns={columns}
+                isLoading={isLoading}
+                error={error}
+                pageSize={15}
+              />
+            </div>
           </div>
         </section>
 
         <section
           aria-labelledby="timeline-heading"
-          className="lg:w-[340px] lg:shrink-0 lg:self-start lg:sticky lg:top-[61px]"
+          className="lg:w-[340px] lg:shrink-0"
         >
-          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5 lg:h-full lg:overflow-y-auto">
             <h2 id="timeline-heading" className="mb-4 text-base font-semibold text-gray-900">
               Timeline
             </h2>

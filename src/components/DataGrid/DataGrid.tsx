@@ -66,21 +66,21 @@ export function DataGrid({
   const to = Math.min((pageIndex + 1) * currentPageSize, filteredCount)
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex h-full flex-col gap-3">
       {/* Toolbar */}
       <div className="flex items-center justify-end">
         <ColumnToggle table={table} />
       </div>
 
       {/* Table */}
-      <div className="overflow-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="flex-1 min-h-0 overflow-auto rounded-lg border border-gray-200 bg-white shadow-sm">
         <table className="w-full table-fixed text-sm" role="grid" aria-label="Events data grid">
           <colgroup>
             {table.getFlatHeaders().map((header) => (
               <col key={header.id} style={{ width: header.getSize() }} />
             ))}
           </colgroup>
-          <thead className="bg-gray-50">
+          <thead className="sticky top-0 z-10 bg-gray-50">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {

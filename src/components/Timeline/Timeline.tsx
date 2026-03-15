@@ -109,7 +109,7 @@ export function Timeline({ events }: TimelineProps) {
       role="tree"
       aria-label="Events timeline grouped by day"
       onKeyDown={handleKeyDown}
-      className="max-h-[600px] overflow-y-auto pr-2"
+      className="max-h-fit overflow-y-auto pr-2"
     >
       <p className="sr-only">
         Use arrow keys to navigate. Left and Right move between day groups.
