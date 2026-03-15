@@ -53,7 +53,7 @@ export default function App() {
   )
 
   // Remember which element triggered the modal so focus can be restored on close,
-  // keeping the timeline roving-tabindex keyboard navigation intact.
+  // keeping the timeline tabindex keyboard navigation intact.
   const returnFocusRef = useRef<HTMLElement | null>(null)
 
   function handleEdit(event: Event) {
