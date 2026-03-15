@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from 'react'
-import { PlusIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { PlusIcon } from '@heroicons/react/20/solid'
 import { DataGrid } from './components/DataGrid'
 import { Timeline } from './components/Timeline'
 import { EventForm } from './components/EventForm'
@@ -9,6 +9,7 @@ import type { EventFormData } from './components/EventForm'
 import type { Event } from './data/mockEvents'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { Tooltip, TooltipContent, TooltipTrigger } from './components/ui/tooltip'
+import { DateFilter } from './components/DateFilter'
 
 const columns: DataGridColumn[] = [
   { accessorKey: 'title', header: 'Title', enableSorting: true, enableColumnFilter: true, size: 180 },
@@ -32,8 +33,6 @@ const columns: DataGridColumn[] = [
   { accessorKey: 'attendees', header: 'Attendees', enableSorting: true, enableColumnFilter: false, size: 80 },
   { accessorKey: 'organizer', header: 'Responsible', enableSorting: true, enableColumnFilter: true, size: 120 },
 ]
-
-const dateInputCls = 'rounded-md border border-gray-300 bg-white px-2 py-1.5 text-xs shadow-sm focus:outline-none'
 
 export default function App() {
   const { events, isLoading, error, addEvent, updateEvent } = useEventStore()
@@ -90,40 +89,15 @@ export default function App() {
             </p>
           </div>
 
-          <div className="flex items-end gap-2">
+          <div className="flex items-center gap-2">
             {/* Date range filter — syncs DataGrid and Timeline */}
-            <div className="flex items-end gap-1.5">
-              <div className="flex flex-col gap-0.5">
-                <label className="text-xs text-gray-500">From</label>
-                <input
-                  type="date"
-                  value={fromDate}
-                  max={toDate || undefined}
-                  onChange={(e) => setFromDate(e.target.value)}
-                  className={dateInputCls}
-                />
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <label className="text-xs text-gray-500">To</label>
-                <input
-                  type="date"
-                  value={toDate}
-                  min={fromDate || undefined}
-                  onChange={(e) => setToDate(e.target.value)}
-                  className={dateInputCls}
-                />
-              </div>
-              {(fromDate || toDate) && (
-                <button
-                  onClick={() => { setFromDate(''); setToDate('') }}
-                  aria-label="Clear date filter"
-                  className="flex items-center h-8 gap-1 rounded-md border border-gray-300 px-2 py-1.5 text-xs text-gray-500 hover:bg-gray-50 focus:outline-none"
-                >
-                  <XMarkIcon className="h-3.5 w-3.5" aria-hidden="true" />
-                  Clear
-                </button>
-              )}
-            </div>
+            <DateFilter
+              fromDate={fromDate}
+              toDate={toDate}
+              onFromDateChange={setFromDate}
+              onToDateChange={setToDate}
+              onClear={() => { setFromDate(''); setToDate('') }}
+            />
 
             <button
               onClick={() => setFormOpen(true)}
