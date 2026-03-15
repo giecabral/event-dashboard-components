@@ -17,6 +17,7 @@ import {
   ChevronUpDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  PencilSquareIcon,
 } from '@heroicons/react/20/solid'
 import { ColumnToggle } from './ColumnToggle'
 import {
@@ -174,12 +175,13 @@ export function DataGrid({
               table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className={`transition-colors hover:bg-gray-50 ${onRowClick ? 'cursor-pointer' : ''}`}
+                  className={`group transition-colors hover:bg-gray-100 ${onRowClick ? 'cursor-pointer' : ''}`}
                   onClick={() => onRowClick?.(row.original)}
                 >
-                  {row.getVisibleCells().map((cell) => {
+                  {row.getVisibleCells().map((cell, cellIndex, cells) => {
                     const colId = cell.column.id
                     const value = cell.getValue() as string
+                    const isFirst = cellIndex === 0
 
                     return (
                       <td key={cell.id} className="px-3 py-2 text-gray-700 overflow-hidden">
@@ -190,6 +192,15 @@ export function DataGrid({
                         ) : colId === 'category' ? (
                           <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${CATEGORY_STYLES[value]?.badge ?? 'text-gray-600 bg-gray-50 ring-gray-200'}`}>
                             {value}
+                          </span>
+                        ) : isFirst ? (
+                          <span className="flex items-center justify-between gap-1">
+                            <span className="truncate">
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </span>
+                            {onRowClick && (
+                              <PencilSquareIcon className="h-3.5 w-3.5 shrink-0 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
+                            )}
                           </span>
                         ) : (
                           <span className="block truncate">

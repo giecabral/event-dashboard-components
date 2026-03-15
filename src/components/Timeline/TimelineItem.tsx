@@ -1,5 +1,5 @@
 import { forwardRef } from 'react'
-import { MapPinIcon, ClockIcon } from '@heroicons/react/20/solid'
+import { MapPinIcon, ClockIcon, PencilSquareIcon } from '@heroicons/react/20/solid'
 import { CATEGORY_STYLES, CATEGORY_DOT_DEFAULT, STATUS_STYLES } from '../../lib/categoryColors'
 import type { Event } from '../../data/mockEvents'
 
@@ -36,9 +36,12 @@ export const TimelineItem = forwardRef<HTMLDivElement, TimelineItemProps>(
 
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-sm font-medium leading-snug text-gray-900">{event.title}</h3>
-          <span className={`shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset capitalize ${STATUS_STYLES[event.status] ?? ''}`}>
-            {event.status}
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <PencilSquareIcon className="h-3.5 w-3.5 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
+            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset capitalize ${STATUS_STYLES[event.status] ?? ''}`}>
+              {event.status}
+            </span>
+          </div>
         </div>
 
         <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500">

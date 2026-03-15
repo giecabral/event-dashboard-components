@@ -103,7 +103,6 @@ export function EventForm({ open, onClose, initialData, onSave }: EventFormProps
         <Dialog.Content
           className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white shadow-2xl focus:outline-none"
           aria-describedby="form-desc"
-          onInteractOutside={(e) => e.preventDefault()}
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
