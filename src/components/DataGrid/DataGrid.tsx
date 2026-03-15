@@ -18,6 +18,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   PencilSquareIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
 } from '@heroicons/react/20/solid'
 import { ColumnToggle } from './ColumnToggle'
 import {
@@ -55,14 +57,17 @@ export function DataGrid({
   const [sorting, setSorting] = useState<SortingState>([{ id: 'date', desc: false }])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [globalFilter, setGlobalFilter] = useState('')
 
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, columnFilters, columnVisibility },
+    state: { sorting, columnFilters, columnVisibility, globalFilter },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: 'includesString',
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -78,7 +83,26 @@ export function DataGrid({
   return (
     <div className="flex h-full flex-col gap-3">
       {/* Toolbar */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between gap-2">
+        <div className="relative flex-1 max-w-xs">
+          <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" aria-hidden="true" />
+          <input
+            type="text"
+            placeholder="Search title, category, status…"
+            value={globalFilter}
+            onChange={(e) => { setGlobalFilter(e.target.value); table.setPageIndex(0) }}
+            className="w-full rounded-md border border-gray-300 bg-white py-1.5 pl-8 pr-8 text-xs shadow-sm focus:outline-none"
+          />
+          {globalFilter && (
+            <button
+              onClick={() => { setGlobalFilter(''); table.setPageIndex(0) }}
+              aria-label="Clear search"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+            >
+              <XMarkIcon className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          )}
+        </div>
         <ColumnToggle table={table} />
       </div>
 
@@ -101,7 +125,7 @@ export function DataGrid({
                     <th
                       key={header.id}
                       scope="col"
-                      className="px-3 py-2 text-left"
+                      className="px-3 py-2 text-left bg-gray-200"
                       aria-sort={
                         sorted === 'asc' ? 'ascending'
                           : sorted === 'desc' ? 'descending'
@@ -110,7 +134,7 @@ export function DataGrid({
                       }
                     >
                       <div
-                        className={`flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-gray-500 ${canSort ? 'cursor-pointer select-none hover:text-gray-900' : ''}`}
+                        className={`flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-gray-800 ${canSort ? 'cursor-pointer select-none hover:text-gray-900' : ''}`}
                         onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
                         role={canSort ? 'button' : undefined}
                         tabIndex={canSort ? 0 : undefined}
@@ -133,10 +157,6 @@ export function DataGrid({
                           </span>
                         )}
                       </div>
-
-                      {/* Per-column filter inputs are hidden for now.
-                          The columnFilters state and getFilteredRowModel() logic remain active
-                          so filters can be re-exposed without any changes here. */}
                     </th>
                   )
                 })}
@@ -184,7 +204,7 @@ export function DataGrid({
                     const isFirst = cellIndex === 0
 
                     return (
-                      <td key={cell.id} className="px-3 py-2 text-gray-700 overflow-hidden">
+                      <td key={cell.id} title={String(value)} className="px-3 py-2 text-gray-700 overflow-hidden">
                         {colId === 'status' ? (
                           <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset capitalize ${STATUS_STYLES[value] ?? ''}`}>
                             {value}

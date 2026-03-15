@@ -1,4 +1,4 @@
-import { useMemo, useRef, useCallback, useState } from 'react'
+import { useMemo, useRef, useCallback } from 'react'
 import { format, parseISO } from 'date-fns'
 import { useAnnouncer } from '../../hooks/useAnnouncer'
 import { TimelineGroup, type DayGroup } from './TimelineGroup'
@@ -17,19 +17,12 @@ interface FocusPos {
 
 export function Timeline({ events, onItemClick, className }: TimelineProps) {
   const announce = useAnnouncer()
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
 
-  // Group events by date (YYYY-MM-DD), sorted chronologically,
-  // filtered by the selected date range when set.
+  // Group events by date (YYYY-MM-DD), sorted chronologically.
+  // Date filtering is handled upstream (App-level) so both the grid and timeline stay in sync.
   const groups = useMemo<DayGroup[]>(() => {
-    const filtered = events.filter((e) => {
-      if (fromDate && e.date < fromDate) return false
-      if (toDate && e.date > toDate) return false
-      return true
-    })
     const map = new Map<string, Event[]>()
-    for (const event of filtered) {
+    for (const event of events) {
       const bucket = map.get(event.date) ?? []
       map.set(event.date, [...bucket, event])
     }
@@ -40,7 +33,7 @@ export function Timeline({ events, onItemClick, className }: TimelineProps) {
         label: format(parseISO(date), 'EEEE, MMMM d, yyyy'),
         events: evts,
       }))
-  }, [events, fromDate, toDate])
+  }, [events])
 
   // Roving tabindex: tracks which cell currently owns tabIndex=0
   const focusPos = useRef<FocusPos>({ g: 0, i: -1 })
@@ -106,43 +99,8 @@ export function Timeline({ events, onItemClick, className }: TimelineProps) {
     [focusAt]
   )
 
-  const inputBase = 'w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-xs shadow-sm focus:outline-none'
-
   return (
     <div className={`flex flex-col flex-1 min-h-0 ${className ?? ''}`}>
-      {/* Date range filter */}
-      <div className="mb-3 flex items-center gap-1">
-        <div className="flex flex-1 flex-col gap-0.5">
-          <label className="text-xs text-gray-500">From</label>
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-            max={toDate || undefined}
-            className={inputBase}
-          />
-        </div>
-        <div className="flex flex-1 flex-col gap-0.5">
-          <label className="text-xs text-gray-500">To</label>
-          <input
-            type="date"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-            min={fromDate || undefined}
-            className={inputBase}
-          />
-        </div>
-        {(fromDate || toDate) && (
-          <button
-            onClick={() => { setFromDate(''); setToDate('') }}
-            className="self-end mb-px rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 focus:outline-none"
-          >
-            Clear
-          </button>
-        )}
-      </div>
-
-      {/* Scrollable groups list */}
       {groups.length === 0 ? (
         <p className="py-12 text-center text-sm text-gray-400">No events to display.</p>
       ) : (
@@ -150,7 +108,7 @@ export function Timeline({ events, onItemClick, className }: TimelineProps) {
           role="tree"
           aria-label="Events timeline grouped by day"
           onKeyDown={handleKeyDown}
-          className="flex-1 min-h-0 max-h-[880px] overflow-y-auto pr-2"
+          className="flex-1 min-h-0 overflow-y-auto pr-2"
         >
           <p className="sr-only">
             Use arrow keys to navigate. Left and Right move between day groups.

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { PlusIcon } from '@heroicons/react/20/solid'
+import { useState, useMemo } from 'react'
+import { PlusIcon, XMarkIcon } from '@heroicons/react/20/solid'
 import { DataGrid } from './components/DataGrid'
 import { Timeline } from './components/Timeline'
 import { EventForm } from './components/EventForm'
@@ -12,19 +12,46 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './components/ui/tooltip
 
 const columns: DataGridColumn[] = [
   { accessorKey: 'title', header: 'Title', enableSorting: true, enableColumnFilter: true, size: 180 },
-  { accessorKey: 'date', header: 'Date', enableSorting: true, enableColumnFilter: false, size: 96 },
+  {
+    accessorKey: 'date',
+    header: 'Date',
+    enableSorting: true,
+    enableColumnFilter: false,
+    enableGlobalFilter: false,
+    size: 96,
+    // Display as MM-DD-YYYY; underlying YYYY-MM-DD value is preserved for correct sorting
+    cell: ({ getValue }) => {
+      const val = getValue() as string
+      const [y, m, d] = val.split('-')
+      return `${m}-${d}-${y}`
+    },
+  },
   { accessorKey: 'time', header: 'Time', enableSorting: false, enableColumnFilter: false, size: 72 },
   { accessorKey: 'category', header: 'Category', enableSorting: true, enableColumnFilter: true, size: 100 },
   { accessorKey: 'status', header: 'Status', enableSorting: true, enableColumnFilter: true, size: 96 },
   { accessorKey: 'location', header: 'Location', enableSorting: false, enableColumnFilter: true, size: 140 },
   { accessorKey: 'attendees', header: 'Attendees', enableSorting: true, enableColumnFilter: false, size: 80 },
-  { accessorKey: 'organizer', header: 'Organizer', enableSorting: true, enableColumnFilter: true, size: 120 },
+  { accessorKey: 'organizer', header: 'Responsible', enableSorting: true, enableColumnFilter: true, size: 120 },
 ]
+
+const dateInputCls = 'rounded-md border border-gray-300 bg-white px-2 py-1.5 text-xs shadow-sm focus:outline-none'
 
 export default function App() {
   const { events, isLoading, error, addEvent, updateEvent } = useEventStore()
   const [formOpen, setFormOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
+
+  // Filter events by the selected date range; used by both DataGrid and Timeline
+  const filteredEvents = useMemo(
+    () => events.filter((e) => {
+      if (fromDate && e.date < fromDate) return false
+      if (toDate && e.date > toDate) return false
+      return true
+    }),
+    [events, fromDate, toDate]
+  )
 
   function handleEdit(event: Event) {
     setEditingEvent(event)
@@ -48,7 +75,7 @@ export default function App() {
     <div className="flex min-h-screen lg:h-screen flex-col bg-gray-50">
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-gray-200 bg-white px-4 py-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center gap-3 justify-between">
           <div>
             <h1 className="text-lg font-semibold text-gray-900 sm:text-xl">
               Event Dashboard
@@ -58,7 +85,41 @@ export default function App() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-end gap-2">
+            {/* Date range filter — syncs DataGrid and Timeline */}
+            <div className="flex items-end gap-1.5">
+              <div className="flex flex-col gap-0.5">
+                <label className="text-xs text-gray-500">From</label>
+                <input
+                  type="date"
+                  value={fromDate}
+                  max={toDate || undefined}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className={dateInputCls}
+                />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <label className="text-xs text-gray-500">To</label>
+                <input
+                  type="date"
+                  value={toDate}
+                  min={fromDate || undefined}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className={dateInputCls}
+                />
+              </div>
+              {(fromDate || toDate) && (
+                <button
+                  onClick={() => { setFromDate(''); setToDate('') }}
+                  aria-label="Clear date filter"
+                  className="flex items-center gap-1 rounded-md border border-gray-300 px-2 py-1.5 text-xs text-gray-500 hover:bg-gray-50 focus:outline-none"
+                >
+                  <XMarkIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                  Clear
+                </button>
+              )}
+            </div>
+
             <button
               onClick={() => setFormOpen(true)}
               className="flex items-center gap-1.5 rounded-md bg-default-blue px-3 py-2 text-sm font-medium text-white focus:outline-none"
@@ -79,7 +140,7 @@ export default function App() {
             </h2>
             <div className="lg:flex-1 lg:min-h-0">
               <DataGrid
-                data={events}
+                data={filteredEvents}
                 columns={columns}
                 isLoading={isLoading}
                 error={error}
@@ -106,7 +167,7 @@ export default function App() {
                 </TooltipContent>
               </Tooltip>
             </h2>
-            <Timeline events={events} onItemClick={handleEdit} className="lg:flex-1 lg:min-h-0" />
+            <Timeline events={filteredEvents} onItemClick={handleEdit} className="lg:flex-1 lg:min-h-0" />
           </div>
         </section>
 
