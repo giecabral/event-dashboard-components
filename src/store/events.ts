@@ -16,10 +16,8 @@ export const useEventStore = create<EventStore>((set) => ({
 
   addEvent: (event) =>
     set((state) => ({
-      events: [
-        ...state.events,
-        { ...event, id: crypto.randomUUID() },
-      ],
+      events: [...state.events, { ...event, id: crypto.randomUUID() }]
+        .sort((a, b) => a.date.localeCompare(b.date)),
     })),
 
   updateEvent: (id, updates) =>
