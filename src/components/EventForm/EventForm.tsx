@@ -103,7 +103,6 @@ export function EventForm({ open, onClose, initialData, onSave }: EventFormProps
           className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white shadow-2xl focus:outline-none"
           aria-describedby="form-desc"
         >
-          {/* Header */}
           <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
             <Dialog.Title className="text-base font-semibold text-gray-900">
               {isEdit ? 'Edit Event' : 'New Event'}
@@ -219,7 +218,7 @@ export function EventForm({ open, onClose, initialData, onSave }: EventFormProps
                 <input
                   type="number"
                   min={1}
-                  {...register('attendees')}
+                  {...register('attendees', { valueAsNumber: true })}
                   className={`${base} ${errors.attendees ? err : ''}`}
                   aria-invalid={!!errors.attendees}
                 />

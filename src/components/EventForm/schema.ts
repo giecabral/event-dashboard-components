@@ -10,7 +10,7 @@ export const eventSchema = z.object({
   location:    z.string().min(1, 'Location is required'),
   category:    z.string().min(1, 'Category is required'),
   status:      z.enum(['scheduled', 'completed', 'cancelled']),
-  attendees:   z.coerce.number({ error: 'Must be a number' })
+  attendees:   z.number({ error: 'Must be a number' })
                 .int()
                 .min(1, 'At least 1 attendee required'),
   organizer:   z.string().min(1, 'Organizer is required'),
