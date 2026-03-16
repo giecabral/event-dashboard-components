@@ -10,6 +10,9 @@ interface ColumnToggleProps {
 export function ColumnToggle({ table }: ColumnToggleProps) {
   const [open, setOpen] = useState(false)
 
+  const toggleableCols = table.getAllLeafColumns().filter((col) => col.id !== 'actions')
+  const visibleCount = toggleableCols.filter((col) => col.getIsVisible()).length
+
   return (
     <div className="relative">
       <button
@@ -31,24 +34,26 @@ export function ColumnToggle({ table }: ColumnToggleProps) {
             aria-multiselectable="true"
             className="absolute right-0 z-20 mt-1 min-w-[180px] rounded-md border border-gray-200 bg-white py-1 shadow-lg"
           >
-            {table.getAllLeafColumns()
-              .filter((col) => col.id !== 'actions')
-              .map((col) => (
+            {toggleableCols.map((col) => {
+              const isLastVisible = col.getIsVisible() && visibleCount <= 1
+              return (
                 <label
                   key={col.id}
                   role="option"
                   aria-selected={col.getIsVisible()}
-                  className="flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                  className={`flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 ${isLastVisible ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                 >
                   <input
                     type="checkbox"
                     checked={col.getIsVisible()}
                     onChange={col.getToggleVisibilityHandler()}
+                    disabled={isLastVisible}
                     className="h-3.5 w-3.5 rounded border-gray-300"
                   />
                   {typeof col.columnDef.header === 'string' ? col.columnDef.header : col.id}
                 </label>
-              ))}
+              )
+            })}
           </div>
         </>
       )}
