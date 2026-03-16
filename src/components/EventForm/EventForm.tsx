@@ -61,9 +61,8 @@ export function EventForm({ open, onClose, initialData, onSave }: EventFormProps
     setFocus,
     control,
     formState: { errors, isValid },
-  } = useForm<EventFormData, unknown, EventFormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(eventSchema) as any,
+  } = useForm<EventFormData>({
+    resolver: zodResolver(eventSchema),
     defaultValues: initialData ?? { status: 'scheduled', attendees: 1 },
     mode: 'onChange',
   })
