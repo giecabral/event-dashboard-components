@@ -22,7 +22,7 @@ npm run dev
 | Table | TanStack Table v8 | Headless — full control over markup and accessibility |
 | State | Zustand | Minimal boilerplate for a flat, shared event store |
 | Form | react-hook-form + Zod | Uncontrolled inputs with schema-driven validation |
-| UI primitives | Radix UI Dialog + Base UI Select/Tooltip | Accessible out of the box; unstyled so Tailwind owns the look |
+| UI primitives | Radix UI + shadcn/ui | Accessible out of the box; unstyled so Tailwind owns the look |
 | Toasts | Sonner | Lightweight, accessible `aria-live` announcements |
 | Mock data | Faker.js | Realistic, reproducible dataset (seeded with `42`) |
 | Date utilities | date-fns | Tree-shakeable; no moment.js bloat |
@@ -51,9 +51,15 @@ src/
 │   │   ├── EventForm.tsx           # Modal form for add / edit
 │   │   ├── schema.ts               # Zod validation schema
 │   │   └── index.ts
+│   ├── DateFilter/
+│   │   ├── DateFilter.tsx          # Date range dropdown with calendar and presets
+│   │   └── index.ts
 │   └── ui/
-│       ├── select.tsx              # Base UI Select (shadcn-style)
-│       └── tooltip.tsx             # Base UI Tooltip (shadcn-style)
+│       ├── button.tsx              # shadcn Button
+│       ├── calendar.tsx            # shadcn Calendar (react-day-picker)
+│       ├── card.tsx                # shadcn Card
+│       ├── select.tsx              # shadcn Select
+│       └── tooltip.tsx             # shadcn Tooltip
 ├── data/
 │   └── mockEvents.ts               # 200 seeded Faker events
 ├── hooks/
@@ -155,7 +161,7 @@ A modal dialog for creating and editing events.
 | Field | Rule |
 |---|---|
 | Title | Required |
-| Date | Required, must match `YYYY-MM-DD` |
+| Date | Required, must be a valid date (`YYYY-MM-DD` format; impossible dates like `2025-13-45` are rejected) |
 | Time | Required |
 | Location | Required |
 | Category | Required (Conference / Workshop / Meetup / Webinar / Social / Training) |
@@ -185,7 +191,7 @@ A modal dialog for creating and editing events.
 
 A single Zustand store (`src/store/events.ts`) holds the event array and exposes two mutations:
 
-- `addEvent` — appends a new event with a `crypto.randomUUID()` id
+- `addEvent` — adds a new event with a `crypto.randomUUID()` id and re-sorts the array by date
 - `updateEvent` — merges partial updates by id
 
 Zustand was chosen over Context + `useReducer` for its minimal boilerplate and to avoid unnecessary re-renders — components subscribe only to the slices they use.
@@ -193,6 +199,8 @@ Zustand was chosen over Context + `useReducer` for its minimal boilerplate and t
 ### App-Level Filtering
 
 Date range filtering lives in `App.tsx` rather than inside either component. A single `filteredEvents` array (derived with `useMemo`) flows into both `DataGrid` and `Timeline`, keeping them in perfect sync without any cross-component communication. The DataGrid handles its own text search internally via TanStack's `globalFilterFn`.
+
+The `DateFilter` component provides a dropdown calendar picker (react-day-picker in range mode) with quick-select presets — Tomorrow, Week, 2 Weeks, Month — each setting `fromDate` to today and `toDate` to today + N days.
 
 ---
 
