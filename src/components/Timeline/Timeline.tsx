@@ -1,6 +1,6 @@
-import { useMemo, useRef, useCallback } from 'react'
+import { useMemo } from 'react'
 import { format, parseISO } from 'date-fns'
-import { useAnnouncer } from '../../hooks/useAnnouncer'
+import { useTimelineNavigation } from '../../hooks/useTimelineNavigation'
 import { TimelineGroup, type DayGroup } from './TimelineGroup'
 import type { Event } from '../../data/mockEvents'
 
@@ -11,19 +11,12 @@ interface TimelineProps {
   className?: string
 }
 
-interface FocusPos {
-  g: number  // group index
-  i: number  // item index, -1 = group header
-}
-
 // Skeleton group layout mirrors the real TimelineGroup/TimelineItem structure
 const SKELETON_GROUPS = [3, 2, 3]
 
 export function Timeline({ events, isLoading = false, onItemClick, className }: TimelineProps) {
-  const announce = useAnnouncer()
-
   // Group events by date (YYYY-MM-DD), sorted chronologically.
-  // Date filtering is handled upstream (App-level) so both the grid and timeline stay in sync.
+  // Date filtering is handled upstream (App-level) so both grid and timeline stay in sync.
   const groups = useMemo<DayGroup[]>(() => {
     const map = new Map<string, Event[]>()
     for (const event of events) {
@@ -39,69 +32,7 @@ export function Timeline({ events, isLoading = false, onItemClick, className }: 
       }))
   }, [events])
 
-  // Roving tabindex: tracks which cell currently owns tabIndex=0
-  const focusPos = useRef<FocusPos>({ g: 0, i: -1 })
-
-  // 2D ref maps: headers[g] and items[g][i]
-  const headerRefs = useRef<Map<number, HTMLDivElement>>(new Map())
-  const itemRefs   = useRef<Map<string, HTMLDivElement>>(new Map())
-
-  const itemKey = (g: number, i: number) => `${g}-${i}`
-
-  // Move focus to (g, i), clamping to valid bounds, and announce to screen readers
-  const focusAt = useCallback(
-    (g: number, i: number) => {
-      const clampedG = Math.max(0, Math.min(g, groups.length - 1))
-      const group = groups[clampedG]
-      if (!group) return
-
-      const clampedI = Math.max(-1, Math.min(i, group.events.length - 1))
-      focusPos.current = { g: clampedG, i: clampedI }
-
-      if (clampedI === -1) {
-        headerRefs.current.get(clampedG)?.focus()
-        announce(
-          `Group ${clampedG + 1} of ${groups.length}: ${group.label}, ${group.events.length} event${group.events.length !== 1 ? 's' : ''}`
-        )
-      } else {
-        itemRefs.current.get(itemKey(clampedG, clampedI))?.focus()
-        const ev = group.events[clampedI]
-        announce(
-          `${ev.title}. ${ev.status}. ${ev.time}, ${ev.location}. Item ${clampedI + 1} of ${group.events.length}`
-        )
-      }
-    },
-    [groups, announce]
-  )
-
-  // Keyboard nav:
-  //   Left / Right  — move between days (same item position within day)
-  //   Down          — move to next item in day (or first item if on header)
-  //   Up            — move to previous item (or day header if on first item)
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      const { g, i } = focusPos.current
-      switch (e.key) {
-        case 'ArrowRight':
-          e.preventDefault()
-          focusAt(g + 1, i)
-          break
-        case 'ArrowLeft':
-          e.preventDefault()
-          focusAt(g - 1, i)
-          break
-        case 'ArrowDown':
-          e.preventDefault()
-          focusAt(g, i + 1)
-          break
-        case 'ArrowUp':
-          e.preventDefault()
-          focusAt(g, i - 1)
-          break
-      }
-    },
-    [focusAt]
-  )
+  const { handleKeyDown, onContainerFocus, getGroupProps } = useTimelineNavigation(groups)
 
   return (
     <div className={`flex flex-col flex-1 min-h-0 ${className ?? ''}`}>
@@ -139,14 +70,8 @@ export function Timeline({ events, isLoading = false, onItemClick, className }: 
         <div
           role="tree"
           aria-label="Events timeline grouped by day"
-          // tabIndex=0 makes the tree a Tab stop so keyboard nav can start without a prior click.
-          // When the div itself receives focus (not a child), redirect into the tree immediately.
           tabIndex={0}
-          onFocus={(e) => {
-            if (e.target !== e.currentTarget) return
-            const { g, i } = focusPos.current
-            focusAt(g, i === -1 ? 0 : i)
-          }}
+          onFocus={onContainerFocus}
           onKeyDown={handleKeyDown}
           className="flex-1 min-h-0 overflow-y-auto pr-2 focus:outline-none"
         >
@@ -161,24 +86,8 @@ export function Timeline({ events, isLoading = false, onItemClick, className }: 
               group={group}
               groupIndex={gIdx}
               totalGroups={groups.length}
-              headerTabIndex={
-                focusPos.current.g === gIdx && focusPos.current.i === -1 ? 0 : -1
-              }
-              itemTabIndex={(iIdx) =>
-                focusPos.current.g === gIdx && focusPos.current.i === iIdx ? 0 : -1
-              }
-              onHeaderFocus={() => { focusPos.current = { g: gIdx, i: -1 } }}
-              onItemFocus={(iIdx) => { focusPos.current = { g: gIdx, i: iIdx } }}
               onItemClick={onItemClick}
-              headerRef={(el) => {
-                if (el) headerRefs.current.set(gIdx, el)
-                else headerRefs.current.delete(gIdx)
-              }}
-              itemRef={(iIdx, el) => {
-                const key = itemKey(gIdx, iIdx)
-                if (el) itemRefs.current.set(key, el)
-                else itemRefs.current.delete(key)
-              }}
+              {...getGroupProps(gIdx)}
             />
           ))}
         </div>

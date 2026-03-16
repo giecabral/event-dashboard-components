@@ -1,15 +1,12 @@
-import { useState, useMemo, useRef } from 'react'
 import { PlusIcon } from '@heroicons/react/20/solid'
 import { DataGrid } from './components/DataGrid'
 import { Timeline } from './components/Timeline'
 import { EventForm } from './components/EventForm'
-import { useEventStore } from './store/events'
 import type { DataGridColumn } from './components/DataGrid'
-import type { EventFormData } from './components/EventForm'
-import type { Event } from './data/mockEvents'
 import { InformationCircleIcon } from '@heroicons/react/24/outline'
 import { Tooltip, TooltipContent, TooltipTrigger } from './components/ui/tooltip'
 import { DateFilter } from './components/DateFilter'
+import { useEventDashboard } from './hooks/useEventDashboard'
 
 const columns: DataGridColumn[] = [
   { accessorKey: 'title', header: 'Title', enableSorting: true, enableColumnFilter: true, size: 180 },
@@ -35,46 +32,22 @@ const columns: DataGridColumn[] = [
 ]
 
 export default function App() {
-  const { events, isLoading, error, addEvent, updateEvent } = useEventStore()
-  const [formOpen, setFormOpen] = useState(false)
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null)
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
-
-  // Filter events by the selected date range; used by both DataGrid and Timeline
-  const filteredEvents = useMemo(
-    () => events.filter((e) => {
-      if (fromDate && e.date < fromDate) return false
-      if (toDate && e.date > toDate) return false
-      return true
-    }),
-    [events, fromDate, toDate]
-  )
-
-  // Remember which element triggered the modal so focus can be restored on close,
-  // keeping the timeline tabindex keyboard navigation intact.
-  const returnFocusRef = useRef<HTMLElement | null>(null)
-
-  function handleEdit(event: Event) {
-    returnFocusRef.current = document.activeElement as HTMLElement
-    setEditingEvent(event)
-    setFormOpen(true)
-  }
-
-  function handleClose() {
-    setFormOpen(false)
-    setEditingEvent(null)
-    const target = returnFocusRef.current
-    requestAnimationFrame(() => target?.focus())
-  }
-
-  function handleSave(data: EventFormData) {
-    if (editingEvent) {
-      updateEvent(editingEvent.id, { ...data, description: data.description ?? '' })
-    } else {
-      addEvent({ ...data, description: data.description ?? '' })
-    }
-  }
+  const {
+    filteredEvents,
+    isLoading,
+    error,
+    formOpen,
+    editingEvent,
+    fromDate,
+    toDate,
+    setFromDate,
+    setToDate,
+    clearDateFilter,
+    openNewEvent,
+    handleEdit,
+    handleClose,
+    handleSave,
+  } = useEventDashboard()
 
   return (
     <div className="flex min-h-screen lg:h-screen flex-col bg-gray-50">
@@ -90,17 +63,16 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Date range filter — syncs DataGrid and Timeline */}
             <DateFilter
               fromDate={fromDate}
               toDate={toDate}
               onFromDateChange={setFromDate}
               onToDateChange={setToDate}
-              onClear={() => { setFromDate(''); setToDate('') }}
+              onClear={clearDateFilter}
             />
 
             <button
-              onClick={() => setFormOpen(true)}
+              onClick={openNewEvent}
               className="flex items-center gap-1.5 rounded-md bg-default-blue px-3 py-2 text-sm font-medium text-white focus:outline-none"
             >
               <PlusIcon className="h-4 w-4" aria-hidden="true" />
@@ -146,11 +118,14 @@ export default function App() {
                 </TooltipContent>
               </Tooltip>
             </h2>
-            <Timeline events={filteredEvents} isLoading={isLoading} onItemClick={handleEdit} className="lg:flex-1 lg:min-h-0 max-h-[540px]" />
+            <Timeline
+              events={filteredEvents}
+              isLoading={isLoading}
+              onItemClick={handleEdit}
+              className="lg:flex-1 lg:min-h-0 max-h-[540px]"
+            />
           </div>
         </section>
-
-
       </main>
 
       <EventForm
